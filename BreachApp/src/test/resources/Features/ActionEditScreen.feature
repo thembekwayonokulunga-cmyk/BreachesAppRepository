@@ -140,3 +140,36 @@ Feature: Action Edit Screen
     When the user leaves the comment blank and clicks "Save"
     Then save must be blocked
     And an error message “Comment are required” must appear
+
+  @TC_AE19_S1
+  Scenario: TC_AE19_S1 - Mark action as complete
+    Given the user accesses the Action Edit Screen
+    When the user clicks "Mark as Complete" on an open action
+    Then the system must display the Action Edit Screen
+    And update the action status to “Completed”
+
+  @TC_AE19_S2
+  Scenario: TC_AE19_S2 - Completed action appears in review queue
+    Given the user completes an action
+    When the user logs in again as the Initiator
+    Then the completed action must appear in the review queue
+
+  @TC_AE20_S1
+  Scenario: TC_AE20_S1 - Locate Next button on Action Edit Screen
+    Given the user accesses the Action Edit Screen
+    When the user checks for the "Next" button
+    Then the button must be visible and functional
+
+  @TC_AE21_S1
+  Scenario: TC_AE21_S1 - Navigate to second screen
+    Given the user is on the Action Edit Screen
+    When the user clicks “Next”
+    Then the second screen must load successfully
+    And the “Mark as Complete” button must be visible and clickable
+
+  @TC_AE22_S1
+  Scenario: TC_AE22_S1 - Locate Update button on second screen
+    Given the user accesses the Action Edit Screen after completing Step 1
+    When the user locates the “Update” button
+    Then the Action Edit Screen must display properly
+    And the “Update” button must be visible and functional
