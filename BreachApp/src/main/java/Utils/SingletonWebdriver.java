@@ -1,16 +1,26 @@
 package Utils;
 
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.testng.Assert;
+
+import java.util.logging.Logger;
 
 
 public class SingletonWebdriver {
     public static WebDriver driver;
     private SingletonWebdriver() {}
-    public static WebDriver getDriver() {
-        if (driver == null) {
-            System.setProperty("webdriver.firefox.driver", "C:\\SeleniumWorkspace\\geckodriver.exe");
-            driver = new ChromeDriver();
+    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    public static WebDriver getDriver(){
+        try {
+            if(driver == null){
+                driver = new EdgeDriver();
+                driver.manage().window().maximize();
+            }
+        } catch (Exception e) {
+            LOGGER.info(String.format("Unable to naviagte to breaches app: %s",e.getMessage()));
+            Assert.fail("Unable to navigate to breaches app");
         }
         return driver;
     }
