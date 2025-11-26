@@ -1,119 +1,70 @@
-Feature: User Authentication
+Feature: Landing Page Access and Visualization
+  The landing page should provide secure login, display breaches and actions in charts,
+  and allow navigation to dashboards.
+  Charts must update dynamically and exclude any statuses with zero records.
 
   Background:
-    Given the user navigates to the PowerApps URL
-    And the user is redirected to the Microsoft sign-in page
+    Given I launch the Chrome browser
+    And I navigate to the application URL
 
-  Scenario Outline: Sign in with valid user credentials - LP1_S1
-    When the user enters <email> and <password>
-    And the user clicks the "Sign In" button
-    Then the user is successfully authenticated
-    And the landing page is displayed
-
-    Examples:
-      | email                                      | password        |
-      | bongisani.mabhena@intelliscient.co.za     | @Bongisani123   |
-
-  Scenario Outline: Sign in with valid user credentials - LP1_S2
-    When the user enters <email> and <password>
-    And the user clicks the "Sign In" button
-    Then the user is successfully authenticated
-    And the landing page is displayed
+  Scenario Outline: Verify login functionality
+    When I enter username "<username>"
+    And I enter password "<password>"
+    And I click the Login button
+    Then I should see "<expectedResult>"
 
     Examples:
-      | email                                      | password        |
-      | bongisani.mabhena@intelliscient.co.za     | @Bongisani123   |
+      | username     | password      | expectedResult                     |
+      | Bongisani1243 | #Password232  | Successful login and landing page  |
+      | Bongisani123 | #Wrong#232    | Login failed - invalid credentials |
+      | Wrong23      | #Password232  | Login failed - invalid credentials |
 
-  Scenario Outline: Sign in with valid user credentials - LP1_S3
-    When the user enters <email> and <password>
-    And the user clicks the "Sign In" button
-    Then the user is successfully authenticated
-    And the landing page is displayed
+  Scenario: Verify breaches pie chart is displayed for authenticated user
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    Then the breaches pie chart should be displayed
 
-    Examples:
-      | email                                      | password        |
-      | bongisani.mabhena@intelliscient.co.za     | @Bongisani123   |
+  Scenario: Verify breaches pie chart updates when new breach is added
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I create a new breach with status "Open"
+    Then the breaches pie chart should update immediately
 
-Feature: Breaches Dashboard - Pie Chart
+  Scenario: Verify breaches pie chart updates when breach status changes
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    And the breaches pie chart is displayed
+    When I update the status of a breach from "Open" to "Closed"
+    Then the breaches pie chart should reflect the status change immediately
 
-  Background:
-    Given the user is signed in as an initiator
-    And the user is on the Breaches landing page
+  Scenario: Verify breaches pie chart excludes statuses with zero records
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I filter breaches by status "Closed" where no records exist
+    Then the breaches pie chart should not display a slice for any status that has zero breaches
 
-  Scenario: Verify pie chart of breaches is displayed - LP2_S1
-    Then the pie chart of breaches is displayed
+  Scenario: Verify actions pie chart is displayed
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    Then the actions pie chart should be displayed
+    And I should be able to hover over each slice
 
-  Scenario Outline: Verify pie chart updates when creating a new breach - LP2_S2
-    When the user creates a new breach with status = <status>
-    Then the pie chart updates to reflect the new breach
+  Scenario: Verify actions pie chart updates dynamically when action status changes
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I update the status of an action from "Open" to "Completed"
+    Then the actions pie chart should reflect the status change immediately
 
-    Examples:
-      | status  |
-      | Open    |
+  Scenario: Verify actions pie chart excludes statuses with zero records
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I apply a filter resulting in no matching actions (e.g., status "Closed")
+    Then the actions pie chart should not display a slice for any status that has zero actions
 
-  Scenario Outline: Verify pie chart reflects status change immediately - LP2_S22
-    Given the pie chart of breaches is displayed
-    When the user updates the status of an existing breach from <old_status> to <new_status>
-    Then the pie chart reflects the status change immediately
+  Scenario: Verify navigation to Breaches Dashboard
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I click the "All Breaches" button
+    Then the system should navigate to the Breaches Dashboard
 
-    Examples:
-      | old_status | new_status |
-      | Open       | Closed     |
+  Scenario: Verify Breaches Dashboard displays only last 12 months’ data
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I click the "All Breaches" button
+    Then the dashboard should only display breaches created in the last 12 months
 
-  Scenario Outline: Verify pie chart when a specific status has no records - LP2_S3
-    When the user applies a filter for breach status = <status>
-    Then the pie chart shows no records for the <status> status
-
-    Examples:
-      | status  |
-      | Closed  |
-
-Feature: Actions Dashboard - Pie Chart
-
-  Background:
-    Given the user is signed in as an initiator
-    And the user is on the Actions Dashboard
-
-  Scenario: Verify actions pie chart is displayed - LP3_S1
-    Then the actions pie chart is displayed
-    When the user hovers over each slice of the pie chart
-    Then the corresponding data is displayed
-
-  Scenario Outline: Verify pie chart updates dynamically when action status changes - LP3_S2
-    When the user updates an existing action status from <old_status> to <new_status>
-    Then the pie chart updates dynamically
-
-    Examples:
-      | old_status | new_status  |
-      | Open       | Completed   |
-
-  Scenario Outline: Verify filter returns no matching actions - LP3_S3
-    When the user navigates to the Actions Dashboard
-    And the user applies a filter with status = <status>
-    Then no matching actions are displayed
-
-    Examples:
-      | status  |
-      | Closed  |
-
-Feature: All Breaches View
-
-  Background:
-    Given the user is signed in as an initiator or user
-
-  Scenario: View all breaches - LP4_S1
-    When the user clicks the "All Breaches" button
-    Then all breaches are displayed
-
-  Scenario: Verify breaches displayed cover only the rolling 12 months - LP4_S2
-    When the user clicks the "All Breaches" button
-    Then the breaches displayed cover only the rolling 12 months
-
-Feature: All Actions View
-
-  Background:
-    Given the user is signed in as an initiator or user
-
-  Scenario: View all actions - LP5_S1
-    When the user clicks the "All Actions" button
-    Then all actions are displayed
+  Scenario: Verify navigation to Actions Dashboard
+    Given I login with valid credentials "Bongisani123" and "#Password232"
+    When I click the "All Actions" button
+    Then the system should navigate to the Actions Dashboard
